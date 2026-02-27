@@ -117,6 +117,25 @@ def calculate_risk_score(df):
 
     return min(score, 100)
 
+def get_dominant_wind_direction(df):
+    if 'WD_Most' not in df.columns or df['WD_Most'].empty:
+        return "Tidak tersedia"
+
+    dir_bins = [0, 45, 90, 135, 180, 225, 270, 315, 360]
+    dir_labels = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+
+    df = df.copy()
+    df['WD_Label'] = pd.cut(
+        df['WD_Most'],
+        bins=dir_bins,
+        labels=dir_labels,
+        include_lowest=True
+    )
+
+    dominant = df['WD_Label'].value_counts().idxmax()
+
+    return dominant
+
 
 def internal_monitoring_report(df, station):
 
@@ -176,6 +195,7 @@ def internal_monitoring_report(df, station):
     rain_total = df['Rain'].sum()
     wind_max = df['WS_Max'].max()
     pressure_std = df['Pressure'].std()
+    dominant_wind = get_dominant_wind_direction(df)
 
     return f"""
 LAPORAN MONITORING INTERNAL
@@ -195,6 +215,7 @@ Evaluasi Parameter:
 • Total curah hujan: {rain_total:.1f} mm
 • Angin maksimum: {wind_max:.1f} knot
 • Variabilitas tekanan: {pressure_std:.2f} mb
+• Arah angin dominan: {dominant_wind}
 """
 
 # --- STATISTICAL ANALYSIS ENGINE ---
@@ -471,3 +492,4 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
