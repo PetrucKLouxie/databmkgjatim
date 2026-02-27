@@ -434,23 +434,43 @@ with st.sidebar:
                 try:
                     df_check = pd.read_excel(uploaded_file)
 
+            # =========================
+            # PREVIEW DATA
+            # =========================
+                    st.markdown("### 👁️ Preview Data")
+                    st.dataframe(df_check.head(20), use_container_width=True)
+
+            # =========================
+            # VALIDASI KOLOM
+            # =========================
                     is_valid, missing = validate_columns(df_check)
 
                     if not is_valid:
                         st.error("❌ Format file tidak sesuai standar BMKG")
                         st.warning(f"Kolom yang hilang: {missing}")
-
                     else:
-                        file_name = f"{target_station}.xlsx"
-                        file_bytes = uploaded_file.getvalue()
+                        st.success("✅ Struktur kolom valid")
+                        st.markdown("### 📊 Ringkasan Data")
+                        st.write("Jumlah Baris:", len(df_check))
+                        st.write("Rentang Tanggal:",
+                             df_check["Tanggal"].min(),
+                             "s/d",
+                             df_check["Tanggal"].max())
 
-                        with st.spinner("Uploading ke GitHub..."):
-                            success = push_to_github(file_bytes, file_name)
+                # Tombol push hanya muncul kalau valid
+                        if st.button("🚀 Push ke GitHub"):
 
-                        if success:
-                            st.success(f"✅ Data {target_station} berhasil diperbarui!")
-                        else:
-                            st.error("❌ Gagal push ke GitHub")
+                            file_name = f"{target_station}.xlsx"
+                            file_bytes = uploaded_file.getvalue()
+
+                            with st.spinner("Uploading ke GitHub..."):
+                                success = push_to_github(file_bytes, file_name)
+                    
+                            if success:
+                                st.success("✅ Upload & Push berhasil!")
+                
+                            else:
+                                st.error("❌ Gagal push ke GitHub")
 
                 except Exception as e:
                     st.error(f"Gagal membaca file: {e}")
@@ -627,6 +647,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
