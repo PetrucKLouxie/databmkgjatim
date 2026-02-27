@@ -521,7 +521,7 @@ if df_raw is not None:
     k5.metric("Angin Max", f"{df_f['WS_Max'].max():.1f} knt")
 
     # --- GRAFIK TREN SUHU ---
-    st.subheader("🌡️ Tren Suhu Harian")
+    st.subheader("🌡️ Tren Suhu")
     fig_t = go.Figure()
     fig_t.add_trace(go.Scatter(x=df_f['Tanggal_DT'], y=df_f['T07'], name="07:00", line=dict(color="#00d4ff")))
     fig_t.add_trace(go.Scatter(x=df_f['Tanggal_DT'], y=df_f['T13'], name="13:00", line=dict(color="#ff4b4b")))
@@ -647,6 +647,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
