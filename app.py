@@ -461,14 +461,23 @@ with st.sidebar:
                         if st.button("🚀 Push ke GitHub"):
 
                             file_name = f"{target_station}.xlsx"
-                            file_bytes = uploaded_file.getvalue()
+                            file_bytes = uploaded_file.getbuffer()
 
+                # Tambahkan timestamp supaya pasti berubah
+                            commit_message = f"Update data {file_name} - {pd.Timestamp.now()}"
+
+                            data = {
+                                "message": commit_message,
+                                "content": encoded_content,
+                                "branch": branch
+                            }
                             with st.spinner("Uploading ke GitHub..."):
                                 success = push_to_github(file_bytes, file_name)
                     
-                            if success:
+                           if success:
                                 st.success("✅ Upload & Push berhasil!")
-                
+                                st.cache_data.clear()
+                                st.rerun()   
                             else:
                                 st.error("❌ Gagal push ke GitHub")
 
@@ -647,6 +656,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
