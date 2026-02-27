@@ -181,8 +181,8 @@ def push_to_github(file_content, file_name):
     api_url = f"https://api.github.com/repos/{repo}/contents/data/{file_name}"
 
     headers = {
-        "Authorization": f"token {token}",
-        "Accept": "application/vnd.github.v3+json"
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json"
     }
 
     encoded_content = base64.b64encode(file_content).decode("utf-8")
@@ -204,6 +204,10 @@ def push_to_github(file_content, file_name):
         data["sha"] = sha
 
     r = requests.put(api_url, headers=headers, json=data)
+
+    if r.status_code not in [200, 201]:
+        st.error(f"GitHub Error {r.status_code}")
+        st.code(r.text)
 
     return r.status_code in [200, 201]
 
@@ -623,6 +627,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
