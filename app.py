@@ -461,7 +461,7 @@ with st.sidebar:
 
                             file_name = f"{target_station}.xlsx"
                             file_bytes = uploaded_file.getvalue()
-                            }
+                        
                             with st.spinner("Uploading ke GitHub..."):
                                 success = push_to_github(file_bytes, file_name)
                     
@@ -647,6 +647,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
