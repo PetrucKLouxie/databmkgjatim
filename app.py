@@ -185,17 +185,20 @@ def push_to_github(file_content, file_name):
         "Accept": "application/vnd.github+json"
     }
 
+    # ✅ WAJIB ADA INI
     encoded_content = base64.b64encode(file_content).decode("utf-8")
 
-    # cek apakah file sudah ada
+    # Cek apakah file sudah ada
     response = requests.get(api_url, headers=headers)
 
     sha = None
     if response.status_code == 200:
         sha = response.json()["sha"]
 
+    commit_message = f"Update data {file_name} - {pd.Timestamp.now()}"
+
     data = {
-        "message": f"Update data {file_name} via BMKG Dashboard",
+        "message": commit_message,
         "content": encoded_content,
         "branch": branch
     }
@@ -656,6 +659,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
