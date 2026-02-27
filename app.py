@@ -5,6 +5,7 @@ import plotly.express as px
 import numpy as np
 import os
 import streamlit.components.v1 as components
+import base64
 
 # --- 1. CONFIGURASI HALAMAN ---
 st.set_page_config(
@@ -621,5 +622,6 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
