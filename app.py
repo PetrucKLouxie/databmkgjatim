@@ -185,32 +185,28 @@ def push_to_github(file_content, file_name):
         "Accept": "application/vnd.github+json"
     }
 
-    # ✅ WAJIB ADA INI
+    # ✅ ENCODE DI SINI (WAJIB DI DALAM FUNGSI)
     encoded_content = base64.b64encode(file_content).decode("utf-8")
 
-    # Cek apakah file sudah ada
+    # cek apakah file sudah ada
     response = requests.get(api_url, headers=headers)
 
     sha = None
     if response.status_code == 200:
         sha = response.json()["sha"]
 
-    commit_message = f"Update data {file_name} - {pd.Timestamp.now()}"
+    commit_message = f"Update data {file_name}"
 
-    data = {
+    payload = {
         "message": commit_message,
         "content": encoded_content,
         "branch": branch
     }
 
     if sha:
-        data["sha"] = sha
+        payload["sha"] = sha
 
-    r = requests.put(api_url, headers=headers, json=data)
-
-    if r.status_code not in [200, 201]:
-        st.error(f"GitHub Error {r.status_code}")
-        st.code(r.text)
+    r = requests.put(api_url, headers=headers, json=payload)
 
     return r.status_code in [200, 201]
 
@@ -464,15 +460,7 @@ with st.sidebar:
                         if st.button("🚀 Push ke GitHub"):
 
                             file_name = f"{target_station}.xlsx"
-                            file_bytes = uploaded_file.getbuffer()
-
-                # Tambahkan timestamp supaya pasti berubah
-                            commit_message = f"Update data {file_name} - {pd.Timestamp.now()}"
-
-                            data = {
-                                "message": commit_message,
-                                "content": encoded_content,
-                                "branch": branch
+                            file_bytes = uploaded_file.getvalue()
                             }
                             with st.spinner("Uploading ke GitHub..."):
                                 success = push_to_github(file_bytes, file_name)
@@ -659,6 +647,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
