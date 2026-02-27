@@ -35,6 +35,40 @@ STASIUN_LIST = [
     "Stamet Banyuwangi", "Stamet Juanda", "Stamet Bawean", "Stageof Karang Kates",
     "Stamet Perak 1", "Stamar Perak 2", "Stageof Nganjuk"
 ]
+# ==========================
+# REQUIRED COLUMN VALIDATION
+# ==========================
+REQUIRED_COLUMNS = [
+    "Tanggal",
+    "T '07.00",
+    "T '13.00",
+    "T '18.00",
+    "TRata2",
+    "TMax",
+    "TMin",
+    "Curah Hujan (mm)",
+    "SS (%)",
+    "Tekanan Udara (mb)",
+    "RH07.00",
+    "RH13.00",
+    "RH18.00",
+    "RHRata2",
+    "Kec Rata2",
+    "Arah Terbanyak",
+    "Kec,Max",
+    "Arah"
+]
+
+def validate_columns(df):
+
+    df.columns = [str(col).strip() for col in df.columns]
+
+    missing_cols = [col for col in REQUIRED_COLUMNS if col not in df.columns]
+
+    if missing_cols:
+        return False, missing_cols
+
+    return True, None
 
 def copy_button(text, label="Copy"):
     components.html(
@@ -135,6 +169,41 @@ def get_dominant_wind_direction(df):
     dominant = df['WD_Label'].value_counts().idxmax()
 
     return dominant
+
+def push_to_github(file_content, file_name):
+
+    token = st.secrets["GITHUB_TOKEN"]
+    repo = st.secrets["GITHUB_REPO"]
+    branch = st.secrets["GITHUB_BRANCH"]
+
+    api_url = f"https://api.github.com/repos/{repo}/contents/data/{file_name}"
+
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    encoded_content = base64.b64encode(file_content).decode("utf-8")
+
+    # cek apakah file sudah ada
+    response = requests.get(api_url, headers=headers)
+
+    sha = None
+    if response.status_code == 200:
+        sha = response.json()["sha"]
+
+    data = {
+        "message": f"Update data {file_name} via BMKG Dashboard",
+        "content": encoded_content,
+        "branch": branch
+    }
+
+    if sha:
+        data["sha"] = sha
+
+    r = requests.put(api_url, headers=headers, json=data)
+
+    return r.status_code in [200, 201]
 
 
 def internal_monitoring_report(df, station):
@@ -319,6 +388,66 @@ with st.sidebar:
             )
         else:
             date_range = None
+        st.markdown("---")
+        st.subheader("🔐 Admin Login")
+
+        if "admin_logged" not in st.session_state:
+            st.session_state.admin_logged = False
+
+        admin_user = st.text_input("Username")
+        admin_pass = st.text_input("Password", type="password")
+
+        if st.button("Login"):
+            if (admin_user == st.secrets["ADMIN_USER"] and
+                admin_pass == st.secrets["ADMIN_PASS"]):
+                st.session_state.admin_logged = True
+                st.success("Login berhasil ✅")
+            else:
+                st.error("Username / Password salah ❌")
+
+# ==========================
+# ADMIN UPLOAD SECTION
+# ==========================
+        if st.session_state.admin_logged:
+
+            st.markdown("---")
+            st.subheader("📂 Upload Data Stasiun")
+
+            target_station = st.selectbox(
+                "Pilih Stasiun Tujuan",
+                STASIUN_LIST
+            )
+
+            uploaded_file = st.file_uploader(
+                "Upload File Excel",
+                type=["xlsx", "xls"]
+            )
+
+            if uploaded_file is not None:
+
+                try:
+                    df_check = pd.read_excel(uploaded_file)
+
+                    is_valid, missing = validate_columns(df_check)
+
+                    if not is_valid:
+                        st.error("❌ Format file tidak sesuai standar BMKG")
+                        st.warning(f"Kolom yang hilang: {missing}")
+
+                    else:
+                        file_name = f"{target_station}.xlsx"
+                        file_bytes = uploaded_file.getvalue()
+
+                        with st.spinner("Uploading ke GitHub..."):
+                            success = push_to_github(file_bytes, file_name)
+
+                        if success:
+                            st.success(f"✅ Data {target_station} berhasil diperbarui!")
+                        else:
+                            st.error("❌ Gagal push ke GitHub")
+
+                except Exception as e:
+                    st.error(f"Gagal membaca file: {e}")
 
 # --- 6. MAIN CONTENT ---
 if df_raw is not None:
@@ -492,4 +621,5 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
