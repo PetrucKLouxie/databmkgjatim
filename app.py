@@ -125,15 +125,17 @@ def process_data(df):
 
 @st.cache_data
 def load_station_file(station_name):
-    for ext in ['.xlsx', '.xls']:
-        file_path = f"data/{station_name}{ext}"
-        if os.path.exists(file_path):
-            try:
-                df = pd.read_excel(file_path)
-                return process_data(df)
-            except Exception as e:
-                st.error(f"Gagal memproses file {station_name}: {e}")
-                return None
+
+    file_path = f"data/{station_name}.csv"
+
+    if os.path.exists(file_path):
+        try:
+            df = pd.read_csv(file_path)
+            return process_data(df)
+        except Exception as e:
+            st.error(f"Gagal memproses file {station_name}: {e}")
+            return None
+
     return None
 
 # --- AI RISK ENGINE ---
@@ -424,14 +426,14 @@ with st.sidebar:
             )
 
             uploaded_file = st.file_uploader(
-                "Upload File Excel",
-                type=["xlsx", "xls"]
+                "Upload File CSV",
+                type=["csv"]
             )
 
             if uploaded_file is not None:
 
                 try:
-                    df_check = pd.read_excel(uploaded_file)
+                    df_check = pd.read_csv(uploaded_file)
 
             # =========================
             # PREVIEW DATA
@@ -459,7 +461,7 @@ with st.sidebar:
                 # Tombol push hanya muncul kalau valid
                         if st.button("🚀 Push ke GitHub"):
 
-                            file_name = f"{target_station}.xlsx"
+                            file_name = f"{target_station}.csv"
                             file_bytes = uploaded_file.getvalue()
                         
                             with st.spinner("Uploading ke GitHub..."):
@@ -647,6 +649,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
