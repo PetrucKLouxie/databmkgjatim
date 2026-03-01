@@ -485,7 +485,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
     st.subheader("🧠 Statistical Intelligence Analysis")
 
     stats = statistical_analysis(df_f)
-    stat_text = statistical_narrative(stats, risk_index=0)
+    stat_text = statistical_narrative(stats, risk_index=0, start_date=None, end_date=None)
     st.markdown(f"""
     <div style="
         background-color:#1f2937;
@@ -504,6 +504,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
