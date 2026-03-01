@@ -199,15 +199,26 @@ def load_station_file(station_name):
 def calculate_risk_score(df):
     score = 0
 
-    if df['Rain'].sum() > 300:
+    # 🔥 Pastikan Rain numerik
+    rain = pd.to_numeric(df['Rain'], errors='coerce').fillna(0)
+
+    if rain.sum() > 300:
         score += 30
-    if df['T_Max'].max() >= 35:
+
+    tmax = pd.to_numeric(df['T_Max'], errors='coerce').fillna(0)
+    if tmax.max() >= 35:
         score += 20
-    if df['WS_Max'].max() >= 25:
+
+    wsmax = pd.to_numeric(df['WS_Max'], errors='coerce').fillna(0)
+    if wsmax.max() >= 25:
         score += 20
-    if df['Pressure'].std() > 3:
+
+    pressure = pd.to_numeric(df['Pressure'], errors='coerce').fillna(0)
+    if pressure.std() > 3:
         score += 15
-    if df['RH_Avg'].mean() > 85:
+
+    rh = pd.to_numeric(df['RH_Avg'], errors='coerce').fillna(0)
+    if rh.mean() > 85:
         score += 15
 
     return min(score, 100)
@@ -747,6 +758,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
