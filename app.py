@@ -162,6 +162,14 @@ def process_data(df):
 
             df[col] = pd.to_numeric(df[col], errors='coerce')
             df[col] = df[col].fillna(0)
+    if 'year' in df.columns:
+        df['year'] = df['year'].astype(int)
+
+    if 'month' in df.columns:
+        df['month'] = df['month'].astype(int)
+
+    if 'day' in df.columns:
+        df['day'] = df['day'].astype(int)
 
     return df
 
@@ -703,6 +711,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
