@@ -628,18 +628,22 @@ if df_raw is not None:
             st.success(f"🟢 Risk Index {risk_score}/100")
     
     # KPI CARDS
+    k1, k2, k3, k4, k5 = st.columns(5)
+
+# ===== AMANKAN DATA NUMERIK =====
     T_Avg = pd.to_numeric(df_f['T_Avg'], errors='coerce').fillna(0)
     T_Max = pd.to_numeric(df_f['T_Max'], errors='coerce').fillna(0)
     RH_Avg = pd.to_numeric(df_f['RH_Avg'], errors='coerce').fillna(0)
     Rain = pd.to_numeric(df_f['Rain'], errors='coerce').fillna(0)
     WS_Max = pd.to_numeric(df_f['WS_Max'], errors='coerce').fillna(0)
 
+# ===== KPI =====
     k1.metric("Suhu Avg", f"{T_Avg.mean():.1f} °C")
     k2.metric("Suhu Max", f"{T_Max.max():.1f} °C")
     k3.metric("RH Avg", f"{RH_Avg.mean():.1f} %")
     k4.metric("Total Hujan", f"{Rain.sum():.1f} mm")
     k5.metric("Angin Max", f"{WS_Max.max():.1f} knt")
-
+    
     # --- GRAFIK TREN SUHU ---
     st.subheader("🌡️ Tren Suhu")
     fig_t = go.Figure()
@@ -767,6 +771,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
