@@ -234,24 +234,29 @@ def statistical_analysis(df):
     return results
 
 def statistical_narrative(stats):
-    text = "ANALISIS STATISTIK LANJUTAN:\n\n"
+    text = ""
 
     for param, val in stats.items():
 
-        trend_desc = "meningkat signifikan" if val["slope"] > 0.2 else \
-                     "menurun signifikan" if val["slope"] < -0.2 else \
-                     "relatif stabil"
+        trend_desc = (
+            "cenderung meningkat" if val["slope"] > 0.2 else
+            "cenderung menurun" if val["slope"] < -0.2 else
+            "relatif stabil"
+        )
 
-        variability = "tinggi" if val["std"] > val["mean"]*0.2 else "normal"
+        variability = (
+            "tinggi" if val["std"] > val["mean"] * 0.2 else
+            "rendah hingga normal"
+        )
 
-        text += f"""
-Parameter {param} memiliki rata-rata {val['mean']:.2f}
-dengan variabilitas {variability}.
-Tren parameter teridentifikasi {trend_desc}.
-Jumlah kejadian anomali terdeteksi sebanyak {val['anomaly_count']} hari.
+        text += (
+            f"Berdasarkan analisis statistik, parameter {param} "
+            f"memiliki rata-rata {val['mean']:.2f} dengan variabilitas {variability}. "
+            f"Perubahan nilai selama periode pengamatan menunjukkan tren {trend_desc}. "
+            f"Terdapat {val['anomaly_count']} kejadian anomali yang mengindikasikan "
+            f"penyimpangan sesaat dari kondisi umum.\n\n"
+        )
 
-"""
-    f""" Anomali artinya nilai menyimpang(lebih) dari nilai rata -rata """
     return text
 
 # --- 5. SIDEBAR NAVIGATION ---
@@ -471,3 +476,4 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
