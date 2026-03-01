@@ -500,7 +500,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
     st.subheader("🧠 Statistical Intelligence Analysis")
 
     stats = statistical_analysis(df_f)
-    stat_text = statistical_narrative(stats)
+    stat_text = statistical_narrative(stats, risk_index=0)
 
     st.text_area("Hasil Analisis Statistik", stat_text, height=350)
     copy_button(stat_text, "📋 Copy")
@@ -510,5 +510,6 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
