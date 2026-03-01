@@ -167,26 +167,23 @@ def process_data(df):
     df['day'] = df['day'].astype(int)
 
     return df
-
-@st.cache_data
+    
+@st.cache_data(ttl=60)  # cache 60 detik
 def load_station_file(station_name):
 
-    file_path = f"data/{station_name}.csv"
+    repo = st.secrets["GITHUB_REPO"]
+    branch = st.secrets["GITHUB_BRANCH"]
 
-    if os.path.exists(file_path):
-        try:
-            df = pd.read_csv(
-                file_path,
-                sep=';',
-                engine='python',
-                on_bad_lines='skip'
-            )
-            return process_data(df)
-        except Exception as e:
-            st.error(f"Gagal memproses file {station_name}: {e}")
-            return None
+    raw_url = f"https://raw.githubusercontent.com/{repo}/{branch}/data/{station_name}.csv"
 
-    return None
+    try:
+        df = pd.read_csv(raw_url, sep=';', engine='python')
+        df = process_data(df)
+        return df
+
+    except Exception as e:
+        st.error(f"Gagal memproses file {station_name}: {e}")
+        return None
 
 # --- AI RISK ENGINE ---
 def calculate_risk_score(df):
@@ -224,6 +221,8 @@ def get_dominant_wind_direction(df):
 
     return dominant
 
+from io import BytesIO
+
 def append_to_github_csv(new_df, file_name):
 
     token = st.secrets["GITHUB_TOKEN"]
@@ -251,29 +250,34 @@ def append_to_github_csv(new_df, file_name):
         sha = None
 
     # ===============================
-    # 2️⃣ Gabungkan data lama + baru
+    # 2️⃣ Gabungkan & Bersihkan
     # ===============================
     combined_df = pd.concat([old_df, new_df], ignore_index=True)
+
     combined_df = combined_df.loc[:, ~combined_df.columns.duplicated()]
 
-    # Hapus duplikasi berdasarkan Tanggal
     if "Tanggal" in combined_df.columns:
-        combined_df = combined_df.drop_duplicates(subset=["Tanggal"], keep="last")
+        combined_df["Tanggal"] = pd.to_datetime(
+            combined_df["Tanggal"],
+            dayfirst=True,
+            errors='coerce'
+        )
 
-    # Urutkan berdasarkan tanggal
-    combined_df["Tanggal"] = pd.to_datetime(combined_df["Tanggal"], dayfirst=True, errors='coerce')
-    combined_df = combined_df.sort_values("Tanggal")
+        combined_df = combined_df.dropna(subset=["Tanggal"])
+        combined_df = combined_df.drop_duplicates(subset=["Tanggal"], keep="last")
+        combined_df = combined_df.sort_values("Tanggal")
+
+        # ubah balik ke format string
+        combined_df["Tanggal"] = combined_df["Tanggal"].dt.strftime("%d-%m-%Y")
 
     # ===============================
-    # 3️⃣ Convert kembali ke CSV
+    # 3️⃣ Convert ke CSV
     # ===============================
     csv_buffer = combined_df.to_csv(index=False, sep=';')
     encoded_content = base64.b64encode(csv_buffer.encode()).decode()
 
-    commit_message = f"Append data {file_name}"
-
     payload = {
-        "message": commit_message,
+        "message": f"Append data {file_name}",
         "content": encoded_content,
         "branch": branch
     }
@@ -515,7 +519,7 @@ with st.sidebar:
             # =========================
             # PREVIEW DATA
             # =========================
-                    df_check = process_data(df_check)
+                    df_check = pd.read_csv(uploaded_file, sep=';', engine='python')
                     st.write(df_check.dtypes)
                     st.markdown("### 👁️ Preview Data")
                     st.dataframe(df_check.head(20), use_container_width=True)
@@ -544,10 +548,10 @@ with st.sidebar:
                             file_bytes = uploaded_file.getvalue()
                         
                             with st.spinner("Uploading ke GitHub..."):
-                                success = append_to_github_csv(df_check, file_name)
+                                success = append_to_github_csv(df_check, f"{target_station}.csv")
                     
                             if success:
-                                st.success("✅ Upload & Push berhasil!")
+                                st.success("✅ Data berhasil ditambahkan!")
                                 st.cache_data.clear()
                                 st.rerun()   
                             else:
@@ -728,6 +732,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
