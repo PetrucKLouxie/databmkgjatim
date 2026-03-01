@@ -516,7 +516,6 @@ with st.sidebar:
             # PREVIEW DATA
             # =========================
                     df_check = process_data(df_check)
-                    st.write("Kolom sebelum process:", df.columns.tolist())
                     st.write(df_check.dtypes)
                     st.markdown("### 👁️ Preview Data")
                     st.dataframe(df_check.head(20), use_container_width=True)
@@ -729,6 +728,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
