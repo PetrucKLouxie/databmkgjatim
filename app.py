@@ -162,10 +162,15 @@ def process_data(df):
                     .str.strip()
                 )
                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
-    df = df.dropna(subset=['year', 'month', 'day'])
-    df['year'] = df['year'].astype(int)
-    df['month'] = df['month'].astype(int)
-    df['day'] = df['day'].astype(int)
+# =============================
+# EKSTRAK YEAR MONTH DAY
+# =============================
+    if 'Tanggal_DT' in df.columns:
+        df = df.dropna(subset=['Tanggal_DT'])
+
+        df['year'] = df['Tanggal_DT'].dt.year
+        df['month'] = df['Tanggal_DT'].dt.month
+        df['day'] = df['Tanggal_DT'].dt.day
 
     return df
     
@@ -736,6 +741,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
