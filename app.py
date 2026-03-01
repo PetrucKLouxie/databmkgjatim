@@ -233,29 +233,63 @@ def statistical_analysis(df):
 
     return results
 
-def statistical_narrative(stats):
-    text = ""
+def statistical_narrative(stats, risk_index):
 
-    for param, val in stats.items():
+    # --- Ringkasan statistik keseluruhan ---
+    variabilities = []
+    trends = []
+    anomalies = 0
 
-        trend_desc = (
-            "cenderung meningkat" if val["slope"] > 0.2 else
-            "cenderung menurun" if val["slope"] < -0.2 else
-            "relatif stabil"
+    for val in stats.values():
+
+        variabilities.append(val["std"] > val["mean"] * 0.2)
+
+        if val["slope"] > 0.2:
+            trends.append(1)
+        elif val["slope"] < -0.2:
+            trends.append(-1)
+        else:
+            trends.append(0)
+
+        anomalies += val["anomaly_count"]
+
+    variability = "tinggi" if any(variabilities) else "normal"
+
+    if sum(trends) > 0:
+        trend_desc = "cenderung meningkat"
+    elif sum(trends) < 0:
+        trend_desc = "cenderung menurun"
+    else:
+        trend_desc = "relatif stabil"
+
+    # --- Narasi berdasarkan Risk Index ---
+    if risk_index < 20:
+        risk_text = (
+            "Secara keseluruhan kondisi atmosfer sangat stabil "
+            "dan tidak menunjukkan potensi cuaca signifikan."
+        )
+    elif risk_index < 40:
+        risk_text = (
+            "Kondisi atmosfer relatif stabil dengan potensi gangguan kecil."
+        )
+    elif risk_index < 70:
+        risk_text = (
+            "Terdapat indikasi ketidakstabilan atmosfer yang dapat "
+            "menimbulkan gangguan cuaca lokal."
+        )
+    else:
+        risk_text = (
+            "Kondisi atmosfer tidak stabil dan berpotensi "
+            "menimbulkan cuaca signifikan."
         )
 
-        variability = (
-            "tinggi" if val["std"] > val["mean"] * 0.2 else
-            "rendah hingga normal"
-        )
-
-        text += (
-            f"Berdasarkan analisis statistik, parameter {param} "
-            f"memiliki rata-rata {val['mean']:.2f} dengan variabilitas {variability}. "
-            f"Perubahan nilai selama periode pengamatan menunjukkan tren {trend_desc}. "
-            f"Terdapat {val['anomaly_count']} kejadian anomali yang mengindikasikan "
-            f"penyimpangan sesaat dari kondisi umum.\n\n"
-        )
+    # --- Paragraf akhir ---
+    text = (
+        f"Secara umum kondisi selama periode analisis menunjukkan "
+        f"variabilitas {variability} dengan tren {trend_desc}. "
+        f"Terdapat {anomalies} kejadian anomali yang bersifat sementara. "
+        f"{risk_text}"
+    )
 
     return text
 
@@ -476,4 +510,5 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
