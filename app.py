@@ -7,6 +7,7 @@ import os
 import streamlit.components.v1 as components
 import base64
 import requests
+from io import BytesIO
 
 # --- 1. CONFIGURASI HALAMAN ---
 st.set_page_config(
@@ -152,16 +153,14 @@ def process_data(df):
 
     for col in numeric_cols:
         if col in df.columns:
-            df[col] = (
-                df[col]
-                .astype(str)
-                .str.replace(',', '.', regex=False)  # ganti desimal koma
-                .str.replace(' ', '', regex=False)   # hapus spasi
-                .str.strip()
-            )
-
-            df[col] = pd.to_numeric(df[col], errors='coerce')
-            df[col] = df[col].fillna(0)
+            if isinstance(df[col], pd.Series):   # pastikan Series
+                df[col] = (
+                    df[col]
+                    .astype(str)
+                    .str.replace(',', '.', regex=False)
+                    .str.strip()
+                )
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
     df = df.dropna(subset=['year', 'month', 'day'])
     df['year'] = df['year'].astype(int)
     df['month'] = df['month'].astype(int)
@@ -245,7 +244,7 @@ def append_to_github_csv(new_df, file_name):
 
     if response.status_code == 200:
         old_content = base64.b64decode(response.json()["content"])
-        old_df = pd.read_csv(pd.io.common.BytesIO(old_content), sep=';')
+        old_df = pd.read_csv(BytesIO(old_content), sep=';', engine='python')
         sha = response.json()["sha"]
     else:
         old_df = pd.DataFrame()
@@ -255,6 +254,7 @@ def append_to_github_csv(new_df, file_name):
     # 2️⃣ Gabungkan data lama + baru
     # ===============================
     combined_df = pd.concat([old_df, new_df], ignore_index=True)
+    combined_df = combined_df.loc[:, ~combined_df.columns.duplicated()]
 
     # Hapus duplikasi berdasarkan Tanggal
     if "Tanggal" in combined_df.columns:
@@ -515,6 +515,7 @@ with st.sidebar:
             # =========================
             # PREVIEW DATA
             # =========================
+                    st.write("Kolom sebelum process:", df.columns.tolist())
                     df_check = process_data(df_check)
                     st.write(df_check.dtypes)
                     st.markdown("### 👁️ Preview Data")
@@ -728,6 +729,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
