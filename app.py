@@ -8,6 +8,7 @@ import streamlit.components.v1 as components
 import base64
 import requests
 from io import BytesIO
+from urllib.parse import quote
 
 # --- 1. CONFIGURASI HALAMAN ---
 st.set_page_config(
@@ -168,13 +169,15 @@ def process_data(df):
 
     return df
     
-@st.cache_data(ttl=60)  # cache 60 detik
+@st.cache_data(ttl=60)
 def load_station_file(station_name):
 
     repo = st.secrets["GITHUB_REPO"]
     branch = st.secrets["GITHUB_BRANCH"]
 
-    raw_url = f"https://raw.githubusercontent.com/{repo}/{branch}/data/{station_name}.csv"
+    safe_name = quote(station_name)  # 🔥 encode spasi
+
+    raw_url = f"https://raw.githubusercontent.com/{repo}/{branch}/data/{safe_name}.csv"
 
     try:
         df = pd.read_csv(raw_url, sep=';', engine='python')
@@ -184,7 +187,7 @@ def load_station_file(station_name):
     except Exception as e:
         st.error(f"Gagal memproses file {station_name}: {e}")
         return None
-
+        
 # --- AI RISK ENGINE ---
 def calculate_risk_score(df):
     score = 0
@@ -228,8 +231,9 @@ def append_to_github_csv(new_df, file_name):
     token = st.secrets["GITHUB_TOKEN"]
     repo = st.secrets["GITHUB_REPO"]
     branch = st.secrets["GITHUB_BRANCH"]
+    safe_name = quote(file_name)
 
-    api_url = f"https://api.github.com/repos/{repo}/contents/data/{file_name}"
+    api_url = f"https://api.github.com/repos/{repo}/contents/data/{safe_name}"
 
     headers = {
         "Authorization": f"Bearer {token}",
@@ -732,6 +736,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
