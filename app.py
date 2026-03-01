@@ -162,7 +162,12 @@ def load_station_file(station_name):
 
     if os.path.exists(file_path):
         try:
-            df = pd.read_csv(file_path, sep=None, engine='python')
+            df = pd.read_csv(
+                file_path,
+                sep=';',
+                engine='python',
+                on_bad_lines='skip'
+            )
             return process_data(df)
         except Exception as e:
             st.error(f"Gagal memproses file {station_name}: {e}")
@@ -465,7 +470,12 @@ with st.sidebar:
             if uploaded_file is not None:
 
                 try:
-                    df_check = pd.read_csv(uploaded_file, sep=None, engine='python')
+                    df_check = pd.read_csv(
+                        uploaded_file,
+                        sep=';',
+                        engine='python',
+                        on_bad_lines='skip'
+                    )
 
             # =========================
             # PREVIEW DATA
@@ -682,6 +692,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
