@@ -496,7 +496,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
     st.text_area(
         "Analisis",
         report_text,
-        height=400  # atur tinggi manual
+        height=500  # atur tinggi manual
     )
     copy_button(report_text, "📋 Copy")
 
@@ -525,6 +525,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
