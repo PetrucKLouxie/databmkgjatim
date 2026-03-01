@@ -101,26 +101,58 @@ def clean_val(x):
         return 0.0
 
 def process_data(df):
+
     df.columns = [str(col).strip() for col in df.columns]
+
     col_mapping = {
-        "T '07.00": 'T07', "T '13.00": 'T13', "T '18.00": 'T18',
-        'TRata2': 'T_Avg', 'TMax': 'T_Max', 'TMin': 'T_Min',
-        'Curah Hujan (mm)': 'Rain', 'SS (%)': 'Sun',
-        'Tekanan Udara (mb)': 'Pressure', 'RH07.00': 'RH07', 
-        'RH13.00': 'RH13', 'RH18.00': 'RH18', 'RHRata2': 'RH_Avg',
-        'Kec Rata2': 'WS_Avg', 'Arah Terbanyak': 'WD_Most',
-        'Kec,Max': 'WS_Max', 'Arah': 'WD_Max'
+        "T '07.00": 'T07',
+        "T '13.00": 'T13',
+        "T '18.00": 'T18',
+        'TRata2': 'T_Avg',
+        'TMax': 'T_Max',
+        'TMin': 'T_Min',
+        'Curah Hujan (mm)': 'Rain',
+        'SS (%)': 'Sun',
+        'Tekanan Udara (mb)': 'Pressure',
+        'RH07.00': 'RH07',
+        'RH13.00': 'RH13',
+        'RH18.00': 'RH18',
+        'RHRata2': 'RH_Avg',
+        'Kec Rata2': 'WS_Avg',
+        'Arah Terbanyak': 'WD_Most',
+        'Kec,Max': 'WS_Max',
+        'Arah': 'WD_Max'
     }
+
     df = df.rename(columns=col_mapping)
+
+    # =============================
+    # TANGGAL
+    # =============================
     if 'Tanggal' in df.columns:
         df['Tanggal_DT'] = pd.to_datetime(df['Tanggal'], dayfirst=True, errors='coerce')
-    
-    numeric_cols = ['T07', 'T13', 'T18', 'T_Avg', 'T_Max', 'T_Min', 'Rain', 'Sun', 
-                    'Pressure', 'RH07', 'RH13', 'RH18', 'RH_Avg', 'WS_Avg', 
-                    'WD_Most', 'WS_Max', 'WD_Max']
+
+    # =============================
+    # KONVERSI NUMERIK AMAN (UNTUK CSV)
+    # =============================
+    numeric_cols = [
+        'T07','T13','T18','T_Avg','T_Max','T_Min',
+        'Rain','Sun','Pressure',
+        'RH07','RH13','RH18','RH_Avg',
+        'WS_Avg','WD_Most','WS_Max','WD_Max'
+    ]
+
     for col in numeric_cols:
         if col in df.columns:
-            df[col] = df[col].apply(clean_val)
+            df[col] = (
+                df[col]
+                .astype(str)              # paksa jadi string dulu
+                .str.replace(',', '.', regex=False)
+                .str.strip()
+            )
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+            df[col] = df[col].fillna(0)
+
     return df
 
 @st.cache_data
@@ -649,6 +681,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
