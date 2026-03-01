@@ -225,7 +225,7 @@ def get_dominant_wind_direction(df):
 
     return dominant
 
-def push_to_github(file_content, file_name):
+def append_to_github_csv(new_df, file_name):
 
     token = st.secrets["GITHUB_TOKEN"]
     repo = st.secrets["GITHUB_REPO"]
@@ -238,17 +238,39 @@ def push_to_github(file_content, file_name):
         "Accept": "application/vnd.github+json"
     }
 
-    # ✅ ENCODE DI SINI (WAJIB DI DALAM FUNGSI)
-    encoded_content = base64.b64encode(file_content).decode("utf-8")
-
-    # cek apakah file sudah ada
+    # ===============================
+    # 1️⃣ Ambil file lama dari GitHub
+    # ===============================
     response = requests.get(api_url, headers=headers)
 
-    sha = None
     if response.status_code == 200:
+        old_content = base64.b64decode(response.json()["content"])
+        old_df = pd.read_csv(pd.io.common.BytesIO(old_content), sep=';')
         sha = response.json()["sha"]
+    else:
+        old_df = pd.DataFrame()
+        sha = None
 
-    commit_message = f"Update data {file_name}"
+    # ===============================
+    # 2️⃣ Gabungkan data lama + baru
+    # ===============================
+    combined_df = pd.concat([old_df, new_df], ignore_index=True)
+
+    # Hapus duplikasi berdasarkan Tanggal
+    if "Tanggal" in combined_df.columns:
+        combined_df = combined_df.drop_duplicates(subset=["Tanggal"], keep="last")
+
+    # Urutkan berdasarkan tanggal
+    combined_df["Tanggal"] = pd.to_datetime(combined_df["Tanggal"], dayfirst=True, errors='coerce')
+    combined_df = combined_df.sort_values("Tanggal")
+
+    # ===============================
+    # 3️⃣ Convert kembali ke CSV
+    # ===============================
+    csv_buffer = combined_df.to_csv(index=False, sep=';')
+    encoded_content = base64.b64encode(csv_buffer.encode()).decode()
+
+    commit_message = f"Append data {file_name}"
 
     payload = {
         "message": commit_message,
@@ -262,7 +284,6 @@ def push_to_github(file_content, file_name):
     r = requests.put(api_url, headers=headers, json=payload)
 
     return r.status_code in [200, 201]
-
 
 def internal_monitoring_report(df, station):
 
@@ -707,6 +728,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
