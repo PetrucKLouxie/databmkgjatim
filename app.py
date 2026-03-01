@@ -171,6 +171,8 @@ def process_data(df):
         df['year'] = df['Tanggal_DT'].dt.year
         df['month'] = df['Tanggal_DT'].dt.month
         df['day'] = df['Tanggal_DT'].dt.day
+    
+    df = df.loc[:, ~df.columns.duplicated()]
 
     return df
     
@@ -261,8 +263,12 @@ def append_to_github_csv(new_df, file_name):
     # ===============================
     # 2️⃣ Gabungkan & Bersihkan
     # ===============================
+    old_df = process_data(old_df)
+    new_df = process_data(new_df)
+
     combined_df = pd.concat([old_df, new_df], ignore_index=True)
 
+# Hapus kolom duplikat setelah concat
     combined_df = combined_df.loc[:, ~combined_df.columns.duplicated()]
 
     if "Tanggal" in combined_df.columns:
@@ -741,6 +747,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
