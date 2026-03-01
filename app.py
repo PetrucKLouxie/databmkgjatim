@@ -154,10 +154,12 @@ def process_data(df):
         if col in df.columns:
             df[col] = (
                 df[col]
-                .astype(str)              # paksa jadi string dulu
-                .str.replace(',', '.', regex=False)
+                .astype(str)
+                .str.replace(',', '.', regex=False)  # ganti desimal koma
+                .str.replace(' ', '', regex=False)   # hapus spasi
                 .str.strip()
             )
+
             df[col] = pd.to_numeric(df[col], errors='coerce')
             df[col] = df[col].fillna(0)
 
@@ -700,6 +702,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
