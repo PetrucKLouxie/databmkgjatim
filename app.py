@@ -233,65 +233,44 @@ def statistical_analysis(df):
 
     return results
 
-def statistical_narrative(stats, risk_index=0):
+def statistical_narrative(stats, risk_index=0, start_date=None, end_date=None):
 
-    variabilities = []
-    trends = []
-    anomalies = 0
+    anomalies = sum(v["anomaly_count"] for v in stats.values())
 
-    for val in stats.values():
-
-        variabilities.append(val["std"] > val["mean"] * 0.2)
-
-        if val["slope"] > 0.2:
-            trends.append(1)
-        elif val["slope"] < -0.2:
-            trends.append(-1)
-        else:
-            trends.append(0)
-
-        anomalies += val["anomaly_count"]
-
-    variability = "tinggi" if any(variabilities) else "normal"
-
-    if sum(trends) > 0:
-        trend_desc = "cenderung meningkat"
-    elif sum(trends) < 0:
-        trend_desc = "cenderung menurun"
+    # --- Format periode ---
+    if start_date and end_date:
+        periode_text = f"selama periode {start_date} hingga {end_date}"
     else:
-        trend_desc = "relatif stabil"
+        periode_text = "selama periode pengamatan"
 
-    # Narasi berdasarkan Risk Index
+    # --- Narasi risiko utama ---
     if risk_index < 20:
         risk_text = (
-            "Secara keseluruhan kondisi atmosfer berada dalam keadaan stabil "
-            "dan tidak menunjukkan indikasi potensi cuaca signifikan yang "
-            "dapat mengganggu aktivitas operasional."
+            "Kondisi atmosfer relatif stabil dan tidak menunjukkan "
+            "potensi gangguan cuaca yang signifikan."
         )
     elif risk_index < 40:
         risk_text = (
-            "Kondisi atmosfer relatif stabil, meskipun terdapat kemungkinan "
-            "gangguan cuaca ringan yang bersifat lokal dan sementara."
+            "Kondisi atmosfer cukup stabil namun terdapat potensi "
+            "gangguan cuaca ringan yang bersifat lokal."
         )
     elif risk_index < 70:
         risk_text = (
-            "Teridentifikasi adanya ketidakstabilan atmosfer yang dapat "
-            "memicu gangguan cuaca dengan intensitas sedang pada waktu tertentu."
+            "Kondisi atmosfer menunjukkan variabilitas yang cukup tinggi "
+            "dengan potensi gangguan cuaca yang perlu diwaspadai."
         )
     else:
         risk_text = (
-            "Kondisi atmosfer menunjukkan tingkat ketidakstabilan yang tinggi "
-            "dan berpotensi menimbulkan cuaca signifikan yang dapat "
-            "berdampak pada aktivitas operasional."
+            "Kondisi atmosfer tidak stabil dan berpotensi menimbulkan "
+            "cuaca signifikan yang dapat berdampak luas."
         )
 
     text = (
-        f"Secara umum hasil analisis selama periode pengamatan menunjukkan "
-        f"bahwa kondisi atmosfer memiliki tingkat variabilitas {variability} "
-        f"dengan kecenderungan perubahan yang {trend_desc}. "
-        f"Sejumlah {anomalies} kejadian anomali terdeteksi, namun sebagian besar "
-        f"bersifat sementara dan tidak menunjukkan penyimpangan yang persisten "
-        f"terhadap kondisi rata-rata. {risk_text}"
+        f"Berdasarkan hasil analisis {periode_text}, kondisi atmosfer "
+        f"menunjukkan fluktuasi yang cukup dinamis. "
+        f"Terdapat {anomalies} kejadian anomali yang umumnya bersifat sementara, "
+        f"namun mencerminkan adanya variabilitas kondisi cuaca selama periode tersebut. "
+        f"{risk_text}"
     )
 
     return text
@@ -525,6 +504,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
