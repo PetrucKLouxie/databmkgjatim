@@ -493,8 +493,16 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
     month_label = sel_month
     report_text = internal_monitoring_report(df_f, selected_stn)
-
-    st.text_area("Hasil Evaluasi Sistem", report_text, height=300)
+    st.markdown(f"""
+    <div style="
+        background-color:#111827;
+        padding:16px;
+        border-radius:10px;
+        line-height:1.6;
+    ">
+    {report_text}
+    </div>
+    """, unsafe_allow_html=True)
     copy_button(report_text, "📋 Copy")
 
     
@@ -522,6 +530,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
