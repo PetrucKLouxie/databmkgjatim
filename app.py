@@ -63,12 +63,20 @@ REQUIRED_COLUMNS = [
 
 def validate_columns(df):
 
-    df.columns = [str(col).strip() for col in df.columns]
+    # Proses dulu agar rename terjadi
+    df_processed = process_data(df.copy())
 
-    missing_cols = [col for col in REQUIRED_COLUMNS if col not in df.columns]
+    required_after_mapping = [
+        'T07','T13','T18','T_Avg','T_Max','T_Min',
+        'Rain','Sun','Pressure',
+        'RH07','RH13','RH18','RH_Avg',
+        'WS_Avg','WD_Most','WS_Max','WD_Max'
+    ]
 
-    if missing_cols:
-        return False, missing_cols
+    missing = [col for col in required_after_mapping if col not in df_processed.columns]
+
+    if missing:
+        return False, missing
 
     return True, None
 
@@ -692,6 +700,7 @@ Semakin tinggi skor, semakin besar potensi variabilitas atau kejadian cuaca sign
 
 else:
     st.warning("⚠️ Masukkan file excel ke folder 'data/' sesuai nama stasiun.")
+
 
 
 
